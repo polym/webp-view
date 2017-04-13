@@ -1,0 +1,89 @@
+<head>
+	<meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0;" name="viewport" />
+	<title>WEBP</title>
+	<link href="css/foundation.css" rel="stylesheet" type="text/css" />
+	<link href="css/twentytwenty.css" rel="stylesheet" type="text/css" />
+</head>
+
+<body>
+	<div id="container" style="margin:0 auto;width:100%;max-width:960px;">
+        <img src="" id="jpg"/>
+        <img src="" id="webp"/>
+    </div>
+	<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.10.1/jquery.min.js"></script>
+	<script src="js/jquery.event.move.js"></script>
+	<script src="js/jquery.twentytwenty.js"></script>
+	<script>
+    $(document).ready(function(){
+		function httpGetAsync(theUrl, callback)
+		{
+			var xmlHttp = new XMLHttpRequest();
+			xmlHttp.onreadystatechange = function() { 
+				if (xmlHttp.readyState == 4 && xmlHttp.status == 200)
+					callback(xmlHttp.responseText);
+			}
+			xmlHttp.open("GET", theUrl, true); // true for asynchronous 
+			xmlHttp.send(null);
+		}
+
+        function httpGet(theUrl)
+        {
+            var xmlHttp = new XMLHttpRequest();
+            xmlHttp.open( "GET", theUrl, false ); // false for synchronous request
+            xmlHttp.send( null );
+            return xmlHttp.responseText;
+        }
+
+        var width = 0, height = 0;
+
+        function doCompare(url, quality) {
+            if(width == 0 || height == 0) {
+                httpGetAsync(url+"!/info", function(s) {
+                    d = JSON.parse(s);
+                    width = d['width']; 
+                    height = d['height'];
+                    $("#container").attr("style", "width:"+width.toString()+"px;height:"+height.toString()+"px");
+					$("#jpg").attr('src', url);
+					$("#webp").attr('src', url + '!/format/webp/quality/' + quality.toString());
+                    $(".twentytwenty-before-label").attr("before-label", "JPEG");
+                    $(".twentytwenty-after-label").attr("after-label", "WEBP q=" + quality.toString());
+                    $(".twentytwenty-handle").attr("style", "left:"+(width/2).toString() + "px");
+                });
+            } else {
+                $("#jpg").attr('src', url);
+                $("#webp").attr('src', url + '!/format/webp/quality/' + quality.toString());
+                $(".twentytwenty-before-label").attr("before-label", "JPEG");
+                $(".twentytwenty-after-label").attr("after-label", "WEBP q=" + quality.toString());
+            }
+        }
+        $("#container").twentytwenty({default_offset_pct: 0.7});
+
+		$(window).load(function(){
+			var url = "http://bigfile.b0.upaiyun.com/webp/" + Math.ceil(Math.random()*1000).toString() + ".jpg";
+            var quality = 75;
+            doCompare(url, quality);
+            document.onkeydown = function(e) {
+                switch(e.keyCode) {
+                    case 38:
+                    case 39:
+                        quality += 10;
+                        if(quality > 100) {
+                            quality = 100;
+                        }
+                        doCompare(url, quality);
+                        break
+                    case 37:
+                    case 40:
+                        quality -= 10;
+                        if(quality < 10) {
+                            quality = 10;
+                        }
+                        doCompare(url, quality);
+                        break
+                }
+            }
+		});
+    });
+	</script>
+</body>
